@@ -1,5 +1,6 @@
 package telran.forum.service.security;
 
+import java.time.LocalDateTime;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -16,7 +17,7 @@ import telran.forum.model.UserAccount;
 
 @Service
 public class UserDetailsServiceImpl implements UserDetailsService {
-	
+
 	@Autowired
 	UserAccountRepository repository;
 
@@ -25,12 +26,15 @@ public class UserDetailsServiceImpl implements UserDetailsService {
 		UserAccount userAccount = repository.findById(username)
 				.orElseThrow(() -> new UsernameNotFoundException(username));
 		String password = userAccount.getPassword();
-		Set<String> setRoles = userAccount.getRoles()
-				.stream()
-				.map(r -> "ROLE_"+r.toUpperCase())
-				.collect(Collectors.toSet());
-		return new User(username, password,
-				AuthorityUtils.createAuthorityList(setRoles.toArray(new String[setRoles.size()])));
+		String[] roles = new String[0];
+		if (userAccount.getExpDate().isAfter(LocalDateTime.now())) {
+			roles = userAccount.getRoles()
+					.stream()
+					.map((r) -> "ROLE_" + r.toUpperCase())
+					.toArray(String[]::new);
+		}
+		return new User(username, password, 
+				AuthorityUtils.createAuthorityList(roles));
 	}
 
 }

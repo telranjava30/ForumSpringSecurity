@@ -13,12 +13,13 @@ public class CustomWebSecurity {
 	@Autowired
 	ForumRepository forumRepository;
 	
-	public boolean checkAuthorityForDeletePost(String id, Authentication authentication) {
+	public boolean checkAuthorityForPost(String id, Authentication authentication) {
 		Post post = forumRepository.findById(id).orElse(null);
 		if(post == null) {
 			return false;
 		}
-		return post.getAuthor().equals(authentication.getName());
+		return post.getAuthor().equals(authentication.getName()) 
+				&& !authentication.getAuthorities().isEmpty();
 	}
 
 }
